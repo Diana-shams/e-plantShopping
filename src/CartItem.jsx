@@ -1,60 +1,55 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { removeItem, updateQuantity } from './CartSlice';
 import './CartItem.css';
 import { removeItem, updateQuantity } from "./CartSlice";
 
-
 const CartItem = ({ onContinueShopping }) => {
-  const cart = useSelector(state => state.cart.items);
+  const cartItems = useSelector(state => state.cart.items);
   const dispatch = useDispatch();
 
-  // Calculate total amount for all products in the cart
-  const calculateTotalAmount = (items) => {
-  return items.reduce((total, item) => {
-    const itemCost = parseFloat(item.cost.replace('$', '')); // Ensure cost is a number
-    return total + itemCost * item.quantity;
-  }, 0); // Start with a total of 0
-};
-
-
-  const handleContinueShopping = (e) => {
-   
-  };
-
-
-
+  // Handle incrementing the quantity of a plant
   const handleIncrement = (item) => {
+    dispatch(updateQuantity({ name: item.name, quantity: item.quantity + 1 }));
   };
 
+  // Handle decrementing the quantity of a plant, remove if quantity reaches 0
   const handleDecrement = (item) => {
-   
+    if (item.quantity > 1) {
+      dispatch(updateQuantity({ name: item.name, quantity: item.quantity - 1 }));
+    } else {
+      dispatch(removeItem(item.name)); // Remove item if quantity is 0
+    }
   };
 
+  // Handle removing the plant from the cart
   const handleRemove = (item) => {
+    dispatch(removeItem(item.name));
   };
 
-  // Calculate total cost based on quantity for an item
+  // Calculate subtotal for a particular plant
   const calculateTotalCost = (item) => {
+    return item.cost * item.quantity; // Subtotal = cost * quantity
   };
-  const handleCheckoutShopping = (e) => {
-  alert('Functionality to be added for future reference');
-};
+
+  // Calculate total cost for all items in the cart
+  const calculateTotalAmount = () => {
+    return cartItems.reduce((total, item) => total + calculateTotalCost(item), 0);
+  };
 
   return (
     <div className="cart-container">
-      <h2 style={{ color: 'black' }}>Total Cart Amount: ${calculateTotalAmount()}</h2>
+      <h2>Total Cart Amount: ${calculateTotalAmount()}</h2>
       <div>
-        {cart.map(item => (
+        {cartItems.map(item => (
           <div className="cart-item" key={item.name}>
             <img className="cart-item-image" src={item.image} alt={item.name} />
             <div className="cart-item-details">
               <div className="cart-item-name">{item.name}</div>
-              <div className="cart-item-cost">{item.cost}</div>
+              <div className="cart-item-cost">${item.cost}</div>
               <div className="cart-item-quantity">
-                <button className="cart-item-button cart-item-button-dec" onClick={() => handleDecrement(item)}>-</button>
-                <span className="cart-item-quantity-value">{item.quantity}</span>
-                <button className="cart-item-button cart-item-button-inc" onClick={() => handleIncrement(item)}>+</button>
+                <button className="cart-item-button" onClick={() => handleDecrement(item)}>-</button>
+                <span>{item.quantity}</span>
+                <button className="cart-item-button" onClick={() => handleIncrement(item)}>+</button>
               </div>
               <div className="cart-item-total">Total: ${calculateTotalCost(item)}</div>
               <button className="cart-item-delete" onClick={() => handleRemove(item)}>Delete</button>
@@ -62,16 +57,9 @@ const CartItem = ({ onContinueShopping }) => {
           </div>
         ))}
       </div>
-      <div style={{ marginTop: '20px', color: 'black' }} className='total_cart_amount'></div>
-      <div className="continue_shopping_btn">
-        <button className="get-started-button" onClick={(e) => handleContinueShopping(e)}>Continue Shopping</button>
-        <br />
-        <button className="get-started-button1">Checkout</button>
-      </div>
+      <button className="continue-shopping-button" onClick={onContinueShopping}>Continue Shopping</button>
     </div>
   );
 };
 
 export default CartItem;
-
-
